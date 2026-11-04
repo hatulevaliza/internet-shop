@@ -1,4 +1,4 @@
-package com.shop.service;
+package shop.service;
 
 public class NotificationService {
 

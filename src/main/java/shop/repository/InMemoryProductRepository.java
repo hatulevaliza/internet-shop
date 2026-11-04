@@ -1,6 +1,6 @@
-package com.shop.repository;
+package shop.repository;
 
-import com.shop.model.Product;
+import shop.model.Product;
 import java.util.*;
 
 public class InMemoryProductRepository implements ProductRepository {
@@ -17,7 +17,7 @@ public class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAll() {  // ← ДОБАВЬТЕ ЭТОТ МЕТОД!
+    public List<Product> findAll() {
         return new ArrayList<>(storage.values());
     }
 

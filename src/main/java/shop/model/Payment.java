@@ -1,4 +1,4 @@
-package com.shop.model;
+package shop.model;
 
 public class Payment {
     private double amount;

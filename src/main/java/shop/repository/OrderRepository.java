@@ -1,11 +1,11 @@
-package com.shop.repository;
+package shop.repository;
 
-import com.shop.model.Order;
+import shop.model.Order;
 import java.util.List;
 
 public interface OrderRepository {
     void save(Order order);
     Order findById(int id);
-    List<Order> findAll();  // ← ДОБАВЬТЕ ЭТОТ МЕТОД!
+    List<Order> findAll();
     void update(Order order);
 }

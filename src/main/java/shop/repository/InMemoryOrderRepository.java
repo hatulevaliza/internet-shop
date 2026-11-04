@@ -1,7 +1,7 @@
-package com.shop.repository;
+package shop.repository;
 
-import com.shop.model.Order;
-import com.shop.model.Customer;
+import shop.model.Order;
+
 import java.util.*;
 
 public class InMemoryOrderRepository implements OrderRepository {
@@ -18,7 +18,7 @@ public class InMemoryOrderRepository implements OrderRepository {
     }
 
     @Override
-    public List<Order> findAll() {  // ← ДОБАВЬТЕ ЭТОТ МЕТОД!
+    public List<Order> findAll() {
         return new ArrayList<>(storage.values());
     }
 

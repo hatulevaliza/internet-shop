@@ -1,15 +1,19 @@
-package com.shop.service;
+package shop.service;
 
-import com.shop.model.*;
-import com.shop.repository.OrderRepository;
-import com.shop.repository.ProductRepository;
+import shop.model.*;
+import shop.model.Customer;
+import shop.model.Order;
+import shop.model.Payment;
+import shop.model.Product;
+import shop.repository.OrderRepository;
+import shop.repository.ProductRepository;
 
 public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final NotificationService notificationService;
 
-    // Dependency Injection через конструктор
+
     public OrderService(OrderRepository orderRepository,
                         ProductRepository productRepository,
                         NotificationService notificationService) {
@@ -18,9 +22,7 @@ public class OrderService {
         this.notificationService = notificationService;
     }
 
-    // 🔥 ИНДИВИДУАЛЬНОЕ ЗАДАНИЕ: проверка остатка
     public Order createOrder(Customer customer, Product product, int quantity) {
-        // Проверка остатка (индивидуальное задание)
         if (!product.hasEnoughStock(quantity)) {
             notificationService.sendNotification(customer.getEmail(),
                     "Ошибка: недостаточно товара '" + product.getName() +
@@ -28,16 +30,13 @@ public class OrderService {
             throw new IllegalArgumentException("Недостаточно товара на складе");
         }
 
-        // Создаём заказ
         int orderId = orderRepository.findAll().size() + 1;
         Order order = new Order(orderId, customer);
         order.addItem(product, quantity);
 
-        // Уменьшаем остаток
         product.reduceStock(quantity);
         productRepository.update(product);
 
-        // Сохраняем заказ
         orderRepository.save(order);
         customer.addOrder(order);
 
