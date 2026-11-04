@@ -33,4 +33,8 @@ public class Product {
     public String toString() {
         return name + " (остаток: " + stock + ", цена: " + price + ")";
     }
+
+    public boolean isAvailable() {
+        return stock > 0;
+    }
 }
