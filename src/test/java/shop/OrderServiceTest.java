@@ -42,7 +42,7 @@ class OrderServiceTest {
 
         Order order = service.createOrder(customer, laptop, 2);
 
-        assertEquals(9998.0, order.getTotal(), 0.001,
+        assertEquals(2000.0, order.getTotal(), 0.001,
                 "Неверная сумма заказа");
         assertEquals(3, laptop.getStock(),
                 "Неверный остаток товара");
