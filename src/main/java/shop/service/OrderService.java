@@ -8,6 +8,8 @@ import shop.repository.OrderRepository;
 import shop.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.micrometer.core.instrument.Counter;
+import shop.MetricsServer;
 
 public class OrderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
@@ -16,18 +18,34 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final NotificationService notificationService;
 
+    // Счетчики для мониторинга
+    private final Counter totalOrdersCounter;
+    private final Counter successOrdersCounter;
+    private final Counter errorOrdersCounter;
+
     public OrderService(OrderRepository orderRepository,
                         ProductRepository productRepository,
                         NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.notificationService = notificationService;
+
+        // Инициализация метрик
+        this.totalOrdersCounter = MetricsServer.REGISTRY.counter("application_operations_total");
+        this.successOrdersCounter = MetricsServer.REGISTRY.counter("application_operations_success_total");
+        this.errorOrdersCounter = MetricsServer.REGISTRY.counter("application_operations_error_total");
     }
 
     public Order createOrder(Customer customer, Product product, int quantity) {
+        // Увеличиваем счетчик ВСЕХ попыток заказа
+        totalOrdersCounter.increment();
+
         LOGGER.info("Получен запрос на оформление заказа от клиента: {}", customer.getName());
 
         if (!product.hasEnoughStock(quantity)) {
+            // Увеличиваем счетчик ОШИБОК
+            errorOrdersCounter.increment();
+
             LOGGER.error("Ошибка обработки товара '{}': недостаточно на складе (запрошено: {}, доступно: {})",
                     product.getName(), quantity, product.getStock());
 
@@ -47,9 +65,11 @@ public class OrderService {
         orderRepository.save(order);
         customer.addOrder(order);
 
-        // Эта строка была слишком длинной, теперь она разбита
         notificationService.sendNotification(customer.getEmail(),
                 "Заказ #" + order.getId() + " создан. Сумма: " + order.getTotal());
+
+        // Увеличиваем счетчик УСПЕШНЫХ заказов
+        successOrdersCounter.increment();
 
         LOGGER.info("Заказ #{} успешно оформлен. Сумма: {}", order.getId(), order.getTotal());
 

@@ -8,6 +8,7 @@ import shop.service.OrderService;
 
 public class Application {
     public static void main(String[] args) {
+        MetricsServer.start();
         // Читаем конфиг (значения подставлены Maven-профилем)
         ConfigReader config = new ConfigReader();
 
