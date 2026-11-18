@@ -34,7 +34,7 @@ public class OrderService {
         this.errorOrdersCounter = MetricsServer.REGISTRY.counter("application_operations_error_total");
     }
 
-    public Order createOrder(Customer customer, Product product, int quantity) {
+    public Order CreateOrder(Customer customer, Product product, int quantity) {
         totalOrdersCounter.increment();
         LOGGER.info("Получен запрос на оформление заказа от клиента: {}", customer.getName());
 
