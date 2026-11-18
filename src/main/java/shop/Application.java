@@ -7,7 +7,7 @@ import shop.service.NotificationService;
 import shop.service.OrderService;
 
 public class Application {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         MetricsServer.start();
         // Читаем конфиг (значения подставлены Maven-профилем)
         ConfigReader config = new ConfigReader();
@@ -39,5 +39,8 @@ public class Application {
         service.processPayment(order, new Payment(order.getTotal(), "CARD"));
 
         System.out.println("\nИтог: " + order);
+
+        // Держим приложение запущенным
+        Thread.sleep(600000);
     }
 }

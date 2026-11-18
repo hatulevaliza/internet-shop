@@ -18,7 +18,6 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final NotificationService notificationService;
 
-    // Счетчики для мониторинга
     private final Counter totalOrdersCounter;
     private final Counter successOrdersCounter;
     private final Counter errorOrdersCounter;
@@ -30,54 +29,34 @@ public class OrderService {
         this.productRepository = productRepository;
         this.notificationService = notificationService;
 
-        // Инициализация метрик
         this.totalOrdersCounter = MetricsServer.REGISTRY.counter("application_operations_total");
         this.successOrdersCounter = MetricsServer.REGISTRY.counter("application_operations_success_total");
         this.errorOrdersCounter = MetricsServer.REGISTRY.counter("application_operations_error_total");
     }
 
     public Order createOrder(Customer customer, Product product, int quantity) {
-        // Увеличиваем счетчик ВСЕХ попыток заказа
         totalOrdersCounter.increment();
-
         LOGGER.info("Получен запрос на оформление заказа от клиента: {}", customer.getName());
 
         if (!product.hasEnoughStock(quantity)) {
-            // Увеличиваем счетчик ОШИБОК
             errorOrdersCounter.increment();
-
-            LOGGER.error("Ошибка обработки товара '{}': недостаточно на складе (запрошено: {}, доступно: {})",
-                    product.getName(), quantity, product.getStock());
-
+            LOGGER.error("Ошибка обработки товара '{}': недостаточно на складе", product.getName());
             notificationService.sendNotification(customer.getEmail(),
-                    "Ошибка: недостаточно товара '" + product.getName() +
-                            "'. Доступно: " + product.getStock());
+                    "Ошибка: недостаточно товара '" + product.getName() + "'");
             throw new IllegalArgumentException("Недостаточно товара на складе");
         }
 
         int orderId = orderRepository.findAll().size() + 1;
         Order order = new Order(orderId, customer);
         order.addItem(product, quantity);
-
         product.reduceStock(quantity);
         productRepository.update(product);
-
         orderRepository.save(order);
         customer.addOrder(order);
-
         notificationService.sendNotification(customer.getEmail(),
                 "Заказ #" + order.getId() + " создан. Сумма: " + order.getTotal());
-
-        // Увеличиваем счетчик УСПЕШНЫХ заказов
         successOrdersCounter.increment();
-
         LOGGER.info("Заказ #{} успешно оформлен. Сумма: {}", order.getId(), order.getTotal());
-
-        if (product.getStock() < 2) {
-            LOGGER.warn("Внимание! Остаток товара '{}' подходит к концу. Осталось: {}",
-                    product.getName(), product.getStock());
-        }
-
         return order;
     }
 
@@ -85,13 +64,11 @@ public class OrderService {
         if (order.isPaid()) {
             throw new IllegalStateException("Заказ уже оплачен");
         }
-
         payment.process();
         if (payment.isSuccessful()) {
             order.setPayment(payment);
             order.setStatus(Order.OrderStatus.PAID);
             orderRepository.save(order);
-
             notificationService.sendNotification(order.getCustomer().getEmail(),
                     "Заказ #" + order.getId() + " оплачен. Спасибо за покупку!");
             LOGGER.info("Заказ #{} успешно оплачен.", order.getId());
@@ -102,7 +79,6 @@ public class OrderService {
     public Order findOrder(int id) {
         Order order = orderRepository.findById(id);
         if (order == null) {
-            LOGGER.error("Заказ с ID {} не найден", id);
             throw new IllegalArgumentException("Заказ не найден");
         }
         return order;
@@ -111,7 +87,6 @@ public class OrderService {
     public void cancelOrder(int orderId) {
         Order order = findOrder(orderId);
         if (order.isPaid()) {
-            LOGGER.warn("Попытка отменить уже оплаченный заказ #{}", orderId);
             throw new IllegalStateException("Нельзя отменить оплаченный заказ");
         }
         order.setStatus(Order.OrderStatus.CANCELLED);
