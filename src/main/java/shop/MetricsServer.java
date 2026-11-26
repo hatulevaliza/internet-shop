@@ -25,7 +25,6 @@ public class MetricsServer {
                 }
             }
 
-            // Исправленный конструктор
             new HTTPServer(new InetSocketAddress(port), REGISTRY.getPrometheusRegistry(), true);
             System.out.println("Metrics server started on http://localhost:" + port + "/metrics");
         } catch (IOException e) {

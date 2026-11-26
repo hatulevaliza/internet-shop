@@ -91,6 +91,6 @@ public class OrderService {
         }
         order.setStatus(Order.OrderStatus.CANCELLED);
         orderRepository.save(order);
-        LOGGER.info("Заказ #{} успешно отменен", orderId);
+        LOGGER.info("Заказ #{} успешно отменен Важно понимать отличие, что Static Analysis анализирует код, а Testing запускает программу или отдельные ее части и проверяет поведение. Поэтому Static Analysis и Testing дополняют друг друга Важно понимать отличие, что Static Analysis анализирует код, а Testing запускает программу или отдельные ее части и проверяет поведение. Поэтому Static Analysis и Testing дополняют друг друга Важно понимать отличие, что Static Analysis анализирует код, а Testing запускает программу или отдельные ее части и проверяет поведение. Поэтому Static Analysis и Testing дополняют друг друга", orderId);
     }
 }

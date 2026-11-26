@@ -9,17 +9,13 @@ import shop.service.OrderService;
 public class Application {
     public static void main(String[] args) throws InterruptedException {
         MetricsServer.start();
-        // Читаем конфиг (значения подставлены Maven-профилем)
         ConfigReader config = new ConfigReader();
 
         System.out.println("=".repeat(50));
         System.out.println("  " + config.getShopName());
         System.out.println("  Окружение: " + config.getEnv());
-        System.out.println("  Валюта:    " + config.get("shop.currency"));
-        System.out.println("  Поддержка: " + config.get("shop.support.email"));
         System.out.println("=".repeat(50));
 
-        // --- Обычная логика магазина ---
         ProductRepository productRepo = new InMemoryProductRepository();
         OrderRepository orderRepo = new InMemoryOrderRepository();
         NotificationService notificationService = new NotificationService();
@@ -31,16 +27,23 @@ public class Application {
         productRepo.save(phone);
 
         Customer customer = new Customer(1, "Иван Петров", "ivan@example.com");
-
-        System.out.println("\nТовары:");
-        productRepo.findAll().forEach(p -> System.out.println("   " + p));
+        Customer customer2 = new Customer(2, "Иван Петров", "ivan@example.com");
 
         Order order = service.createOrder(customer, laptop, 1);
+        Order order2 = service.createOrder(customer2, laptop, 3);
+        Order order3 = service.createOrder(customer2, laptop, 1);
+
+        try {
+            service.createOrder(customer, laptop, 10);
+        } catch (Exception e) {
+            System.out.println("Поймана ошибка заказа: " + e.getMessage());
+        }
+
+
         service.processPayment(order, new Payment(order.getTotal(), "CARD"));
+        service.processPayment(order2, new Payment(order2.getTotal(), "CARD"));
 
-        System.out.println("\nИтог: " + order);
-
-        // Держим приложение запущенным
+        System.out.println("\nСервер работает! Проверяй http://localhost:8081/metrics");
         Thread.sleep(600000);
     }
 }
